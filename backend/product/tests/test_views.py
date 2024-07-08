@@ -6,12 +6,15 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
+from decouple import config
 
 from product.models import Product, ProductImage
 from product.utils import generate_photo_file
 
 
 TEMP_MEDIA = tempfile.mkdtemp()
+MAX_IMG_SIZE = config('MAX_IMG_SIZE', cast=int, default=2097152)
+MAX_IMG_PER_PRODUCT = (config('MAX_ING_PER_PRODUCT', cast=int, default=5))
 
 
 class ProductListCreateApiViewTest(TestCase):
@@ -41,7 +44,7 @@ class ProductListCreateApiViewTest(TestCase):
     @override_settings(MEDIA_ROOT=TEMP_MEDIA)
     def test_valid_product_creation(self):
         image_files = []
-        for i in range(2):
+        for i in range(min(2, MAX_IMG_PER_PRODUCT)):
             img = generate_photo_file()
             image_files.append(img)
         data = {
@@ -74,7 +77,7 @@ class ProductListCreateApiViewTest(TestCase):
     @override_settings(MEDIA_ROOT=TEMP_MEDIA)
     def test_invalid_product_creation_by_invalid_image_count(self):
         image_files = []
-        for i in range(6):
+        for i in range(MAX_IMG_PER_PRODUCT+1):
             img = generate_photo_file()
             image_files.append(img)
         data = {

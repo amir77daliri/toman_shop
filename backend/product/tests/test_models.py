@@ -5,10 +5,13 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from product.models import Product, ProductImage
 from product.utils import create_image
+from decouple import config
 from decimal import Decimal
 
 
 TEMP_MEDIA = tempfile.mkdtemp()
+MAX_IMG_SIZE = config('MAX_IMG_SIZE', cast=int, default=2097152)
+MAX_IMG_PER_PRODUCT = (config('MAX_ING_PER_PRODUCT', cast=int, default=5))
 
 
 class TestProductModel(TestCase):
@@ -54,14 +57,14 @@ class TestProductImages(TestCase):
 
     @override_settings(MEDIA_ROOT=TEMP_MEDIA)
     def test_create_image_within_size_limit(self):
-        image = create_image(2 * 1024 * 1024)  # 2 MB
+        image = create_image(MAX_IMG_SIZE // 1024)  # 2 MB
         product_image = ProductImage(product=self.product, image=image)
         product_image.save()
         self.assertEqual(ProductImage.objects.count(), 1)
 
     @override_settings(MEDIA_ROOT=TEMP_MEDIA)
     def test_create_image_exceeds_size_limit(self):
-        image = create_image(2 * 1024 * 1024 + 1)  # over 2 MB
+        image = create_image(MAX_IMG_SIZE + 10)  # over max size
         product_image = ProductImage(product=self.product, image=image)
 
         with self.assertRaises(ValidationError):
@@ -69,12 +72,12 @@ class TestProductImages(TestCase):
 
     @override_settings(MEDIA_ROOT=TEMP_MEDIA)
     def test_max_images_per_product(self):
-        for _ in range(5):
-            image = create_image(1 * 1024)  # 1 MB
+        for _ in range(MAX_IMG_PER_PRODUCT):
+            image = create_image(MAX_IMG_SIZE // 1024)  # 1 MB
             product_image = ProductImage(product=self.product, image=image)
             product_image.save()
 
-        self.assertEqual(self.product.images.count(), 5)
+        self.assertEqual(self.product.images.count(), MAX_IMG_PER_PRODUCT)
 
         image = create_image(1 * 1024)  # 1 MB
         product_image = ProductImage(product=self.product, image=image)

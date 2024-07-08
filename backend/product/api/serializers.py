@@ -1,5 +1,9 @@
 from rest_framework import serializers
 from product.models import Product, ProductImage
+from decouple import config
+
+MAX_IMG_SIZE = config('MAX_IMG_SIZE', cast=int, default=2097152)
+MAX_IMG_PER_PRODUCT = (config('MAX_ING_PER_PRODUCT', cast=int, default=5))
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -22,12 +26,11 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'price', 'description', 'images', 'new_images')
 
     def validate_new_images(self, value):
-        if len(value) > 5:
-            raise serializers.ValidationError("Only up to 5 image could post per product")
+        if len(value) > MAX_IMG_PER_PRODUCT:
+            raise serializers.ValidationError(f"Only up to {MAX_IMG_PER_PRODUCT} image could post per product")
 
-        max_size = 2 * 1024 * 1024
         for img in value:
-            if img.size > max_size:
+            if img.size > MAX_IMG_SIZE:
                 raise serializers.ValidationError(f"image {img} is over 2MB")
         return value
 

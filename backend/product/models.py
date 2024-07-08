@@ -1,7 +1,11 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from decouple import config
 
 from .utils import generate_filename
+
+MAX_IMG_SIZE = config('MAX_IMG_SIZE', cast=int, default=2097152)
+MAX_IMG_PER_PRODUCT = (config('MAX_ING_PER_PRODUCT', cast=int, default=5))
 
 
 class Product(models.Model):
@@ -26,8 +30,6 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
-    MAX_IMAGES_PER_PRODUCT = 5
-
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to=generate_filename)
 
@@ -40,12 +42,11 @@ class ProductImage(models.Model):
 
     def clean(self):
         # check image size:
-        max_size = 2 * 1024 * 1024
-        if self.image.size > max_size:
-            raise ValidationError("The maximum file size that can be uploaded is 2 MB.")
+        if self.image.size > MAX_IMG_SIZE:
+            raise ValidationError("The maximum file size that can be uploaded is 2MB")
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        if self.product.images.count() == self.MAX_IMAGES_PER_PRODUCT:
-            raise ValidationError("Max image for product is 5")
+        if self.product.images.count() == MAX_IMG_PER_PRODUCT:
+            raise ValidationError(f"Max image count for product is {MAX_IMG_PER_PRODUCT}")
         super().save(*args, **kwargs)
