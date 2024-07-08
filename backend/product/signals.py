@@ -4,5 +4,5 @@ from .models import ProductImage
 
 
 @receiver(post_delete, sender=ProductImage)
-def tell_people(sender, instance, **kwargs):
+def delete_images_from_media(sender, instance, **kwargs):
     instance.image.delete(save=False)
