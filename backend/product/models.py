@@ -16,6 +16,14 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+    def clean(self):
+        if not self.title or not self.description:
+            raise ValidationError(f"title and description could not be empty")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
 
 class ProductImage(models.Model):
     MAX_IMAGES_PER_PRODUCT = 5
@@ -40,5 +48,4 @@ class ProductImage(models.Model):
         self.full_clean()
         if self.product.images.count() == self.MAX_IMAGES_PER_PRODUCT:
             raise ValidationError("Max image for product is 5")
-
         super().save(*args, **kwargs)
