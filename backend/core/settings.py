@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 from decouple import config
 import os
@@ -43,10 +43,12 @@ INSTALLED_APPS = [
 # local apps:
 INSTALLED_APPS += [
     'product.apps.ProductConfig',
+    'authentication.apps.AuthenticationConfig',
 ]
 # Third party:
 INSTALLED_APPS += [
     'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -97,6 +99,17 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(config('ACCESS_TOKEN_LIFETIME'))),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(config('REFRESH_TOKEN_LIFETIME'))),
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
