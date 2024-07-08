@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 ]
 # local apps:
 INSTALLED_APPS += [
+    'product.apps.ProductConfig',
 ]
 # Third party:
 INSTALLED_APPS += [
