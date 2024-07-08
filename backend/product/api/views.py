@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 
@@ -8,6 +9,12 @@ from product.models import Product
 
 
 class ProductListCreateApiView(generics.ListCreateAPIView):
+    """
+    API view to retrieve list of products or create a new product.
+    required authentication for product creation
+    use transaction to save product and its related images
+    """
+
     class ProductPagination(PageNumberPagination):
         page_size = 20
         page_size_query_param = 'page_size'
@@ -15,6 +22,7 @@ class ProductListCreateApiView(generics.ListCreateAPIView):
 
     serializer_class = ProductSerializer
     pagination_class = ProductPagination
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         return Product.objects.prefetch_related('images')
