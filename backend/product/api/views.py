@@ -25,7 +25,7 @@ class ProductListCreateApiView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Product.objects.prefetch_related('images')
+        return Product.objects.prefetch_related('images').order_by('id')
 
     def post(self, request, *args, **kwargs):
         ser_data = self.serializer_class(data=request.data)

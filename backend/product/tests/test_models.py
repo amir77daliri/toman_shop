@@ -47,8 +47,10 @@ class TestProductImages(TestCase):
             description='This is a test product'
         )
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         shutil.rmtree(TEMP_MEDIA)
+        super().tearDownClass()
 
     @override_settings(MEDIA_ROOT=TEMP_MEDIA)
     def test_create_image_within_size_limit(self):
@@ -68,13 +70,13 @@ class TestProductImages(TestCase):
     @override_settings(MEDIA_ROOT=TEMP_MEDIA)
     def test_max_images_per_product(self):
         for _ in range(5):
-            image = create_image(1 * 1024 * 1024)  # 1 MB
+            image = create_image(1 * 1024)  # 1 MB
             product_image = ProductImage(product=self.product, image=image)
             product_image.save()
 
         self.assertEqual(self.product.images.count(), 5)
 
-        image = create_image(1 * 1024 * 1024)  # 1 MB
+        image = create_image(1 * 1024)  # 1 MB
         product_image = ProductImage(product=self.product, image=image)
         with self.assertRaises(ValidationError):
             product_image.save()

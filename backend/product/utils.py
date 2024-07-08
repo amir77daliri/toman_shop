@@ -4,6 +4,7 @@ import uuid
 
 from datetime import datetime
 
+from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
@@ -20,3 +21,12 @@ def create_image(size):
     file.seek(0)
     image = SimpleUploadedFile('test_image.jpg', file.read(), content_type='image/jpeg')
     return image
+
+
+def generate_photo_file():
+    file = io.BytesIO()
+    image = Image.new('RGBA', size=(10, 10), color=(155, 0, 0))
+    image.save(file, 'png')
+    file.name = 'test.png'
+    file.seek(0)
+    return file
