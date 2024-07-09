@@ -13,7 +13,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ('id', 'image')
 
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductBaseSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     new_images = serializers.ListField(
         child=serializers.ImageField(max_length=100000, allow_empty_file=False),
@@ -23,7 +23,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('id', 'title', 'price', 'description', 'images', 'new_images')
+        fields = '__all__'
 
     def validate_new_images(self, value):
         if len(value) > MAX_IMG_PER_PRODUCT:
@@ -34,13 +34,27 @@ class ProductSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"image {img} is over 2MB")
         return value
 
+
+class ProductCreateSerializer(ProductBaseSerializer):
+
     def create(self, validated_data):
         new_images = validated_data.pop('new_images', [])
-        product = Product.objects.create(**validated_data)
+        owner = self.context['request'].user
+        product = Product.objects.create(**validated_data, owner=owner)
 
         for img in new_images:
             ProductImage.objects.create(product=product, image=img)
         return product
 
+
+class ProductUpdateSerializer(ProductBaseSerializer):
+    old_images_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=True
+    )
+
     def update(self, instance, validated_data):
-        pass
+        instance_images_ids = instance.images.values_list('id', flat=True)
+        print(instance_images_ids)
+        return instance

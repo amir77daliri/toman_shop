@@ -1,8 +1,12 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 from decouple import config
 
 from .utils import generate_filename
+
+
+User = get_user_model()
 
 MAX_IMG_SIZE = config('MAX_IMG_SIZE', cast=int, default=2097152)
 MAX_IMG_PER_PRODUCT = (config('MAX_ING_PER_PRODUCT', cast=int, default=5))
@@ -12,6 +16,7 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.TextField()
+    owner = models.ForeignKey(User, related_name='products', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         verbose_name = 'product'
