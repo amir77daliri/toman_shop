@@ -1,6 +1,7 @@
 import io
 import os
 import uuid
+import tempfile
 
 from datetime import datetime
 
@@ -30,3 +31,8 @@ def generate_photo_file():
     file.name = 'test.png'
     file.seek(0)
     return file
+
+
+def generate_temp_media():
+    temp_media = tempfile.mkdtemp()
+    return temp_media

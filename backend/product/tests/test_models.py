@@ -5,12 +5,12 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
 from product.models import Product, ProductImage
-from product.utils import create_image
+from product.utils import create_image, generate_temp_media
 from decouple import config
 from decimal import Decimal
 
 
-TEMP_MEDIA = tempfile.mkdtemp()
+TEMP_MEDIA = generate_temp_media()
 MAX_IMG_SIZE = config('MAX_IMG_SIZE', cast=int, default=2097152)
 MAX_IMG_PER_PRODUCT = (config('MAX_ING_PER_PRODUCT', cast=int, default=5))
 
