@@ -3,6 +3,7 @@ import shutil
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
+from django.contrib.auth import get_user_model
 from product.models import Product, ProductImage
 from product.utils import create_image
 from decouple import config
@@ -17,10 +18,12 @@ MAX_IMG_PER_PRODUCT = (config('MAX_ING_PER_PRODUCT', cast=int, default=5))
 class TestProductModel(TestCase):
 
     def setUp(self):
+        self.user = get_user_model().objects.create(username='test_user', password='user1234')
         self.product = Product.objects.create(
             title="product 1 from test",
             price=Decimal('120000'),
-            description="product 1 inside test"
+            description="product 1 inside test",
+            owner=self.user
         )
 
     def test_product_creation(self):
@@ -36,18 +39,20 @@ class TestProductModel(TestCase):
         self.assertEqual(Product.objects.count(), 1)
 
         # Valid creation
-        product_3 = Product.objects.create(title='p3', price=Decimal('20000'), description="desc of p3")
-
-        product_3.save()
+        product_3 = Product.objects.create(title='p3', price=Decimal('20000'), description="desc of p3", owner=self.user)
         self.assertEqual(Product.objects.count(), 2)
+
+        self.assertEqual(product_3.owner, self.user)
 
 
 class TestProductImages(TestCase):
     def setUp(self):
+        self.user = get_user_model().objects.create(username='test_user', password='user1234')
         self.product = Product.objects.create(
             title='Test Product',
             price=Decimal('99.99'),
-            description='This is a test product'
+            description='This is a test product',
+            owner=self.user
         )
 
     @classmethod

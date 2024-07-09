@@ -73,6 +73,7 @@ class ProductListCreateApiViewTest(TestCase):
         self.assertEqual(product.title, data['title'])
         self.assertEqual(product.description, data['description'])
         self.assertEqual(product.images.count(), len(image_files))
+        self.assertEqual(product.owner, self.user)
 
     @override_settings(MEDIA_ROOT=TEMP_MEDIA)
     def test_invalid_product_creation_by_invalid_image_count(self):
