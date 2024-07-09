@@ -13,7 +13,6 @@ class IsAdminOrOwnerOrReadOnly(permissions.BasePermission):
         return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        # Admins can update or delete
         if request.user.is_staff or obj.owner == request.user:
             return True
 

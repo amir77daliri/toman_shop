@@ -7,6 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 
 from .serializers import ProductCreateSerializer, ProductUpdateSerializer
 from product.models import Product
+from .permissions import IsAdminOrOwnerOrReadOnly
 
 
 class ProductListCreateApiView(generics.ListCreateAPIView):
@@ -53,10 +54,13 @@ class ProductRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView)
     """
 
     serializer_class = ProductUpdateSerializer
+    permission_classes = [IsAdminOrOwnerOrReadOnly]
 
     def get_object(self):
         pk = self.kwargs['pk']
         product = get_object_or_404(Product.objects.prefetch_related('images'), id=pk)
+        # check user permissions:
+        self.check_object_permissions(self.request, product)
         return product
 
     def update(self, request, *args, **kwargs):
