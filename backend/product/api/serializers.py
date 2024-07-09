@@ -34,6 +34,10 @@ class ProductBaseSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"image {img} is over 2MB")
         return value
 
+    def create_images(self, product, new_images):
+        for img in new_images:
+            ProductImage.objects.create(product=product, image=img)
+
 
 class ProductCreateSerializer(ProductBaseSerializer):
 
@@ -41,9 +45,7 @@ class ProductCreateSerializer(ProductBaseSerializer):
         new_images = validated_data.pop('new_images', [])
         owner = self.context['request'].user
         product = Product.objects.create(**validated_data, owner=owner)
-
-        for img in new_images:
-            ProductImage.objects.create(product=product, image=img)
+        self.create_images(product, new_images)
         return product
 
 
@@ -54,7 +56,30 @@ class ProductUpdateSerializer(ProductBaseSerializer):
         required=True
     )
 
+    def validate(self, attrs):
+        validated_attrs = super().validate(attrs)
+
+        if 'old_images_ids' not in validated_attrs:
+            raise serializers.ValidationError("old_images_ids field is required.")
+        new_images_count = len(validated_attrs.get('new_images', []))
+        if new_images_count + len(validated_attrs['old_images_ids']) > MAX_IMG_PER_PRODUCT:
+            raise serializers.ValidationError(f"Only up to {MAX_IMG_PER_PRODUCT} image could post per product")
+        return validated_attrs
+
     def update(self, instance, validated_data):
+        old_imgs_ids = validated_data.pop('old_images_ids', [])
         instance_images_ids = instance.images.values_list('id', flat=True)
-        print(instance_images_ids)
+        removed_ids = [i for i in list(instance_images_ids) if i not in old_imgs_ids]
+        # remove old images that are deleted by client :
+        instance.images.filter(id__in=removed_ids).delete()
+        # Set new values if provided:
+        instance.title = validated_data.get('title', instance.title)
+        instance.price = validated_data.get('price', instance.price)
+        instance.description = validated_data.get('description', instance.description)
+
+        instance.save()
+
+        # Add new images:
+        self.create_images(instance, validated_data.get('new_images', []))
+
         return instance

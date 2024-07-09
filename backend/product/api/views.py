@@ -58,10 +58,21 @@ class ProductRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView)
 
     def get_object(self):
         pk = self.kwargs['pk']
-        product = get_object_or_404(Product.objects.prefetch_related('images'), id=pk)
+        if self.request.method in ['PUT', 'PATCH']:  # Only apply select_for_update() for update methods
+            product = get_object_or_404(Product.objects.select_for_update(), id=pk)
+        else:
+            product = get_object_or_404(Product, id=pk)
         # check user permissions:
         self.check_object_permissions(self.request, product)
         return product
 
+    @transaction.atomic()
     def update(self, request, *args, **kwargs):
-        pass
+        partial = kwargs.pop('partial', False)
+        product = self.get_object()
+        serializer = self.serializer_class(product, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        return Response(serializer.data)
