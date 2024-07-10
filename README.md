@@ -10,13 +10,11 @@
 
 
 ## Contents
-- [Shop Management System](#shop-management-system)
-  - [Features](#features)
-  - [Contents](#contents)
+
 - [Usage](#usage)
   - [Local](#local)
   - [Production](#production)
-  - [Api docs](#api-docs)
+- [Api docs](#api-docs)
 
 # Usage
 
@@ -61,8 +59,8 @@ $ docker-compose up --build -d
 ## Api docs
 Test it out at [Swagger Ui](http://localhost:80/api/schema/swagger-ui/)
 
-<img src="images/api_docs.png" style="width:100%; height:200px" >
+<img src="images/api_docs.png" style="width:100%; height:400px" >
 
 Or Test [Swagger Redoc](http://localhost:80/api/schema/redoc/)
 
-<img src="images/api_docs_2.png" style="width:100%; height:200px" >
+<img src="images/api_docs_2.png" style="width:100%; height:400px" >
