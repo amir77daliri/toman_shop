@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from product.models import Product, ProductImage
 from decouple import config
@@ -24,6 +25,9 @@ class ProductBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+        extra_kwargs = {
+            'owner': {'read_only': True}
+        }
 
     def validate_new_images(self, value):
         if len(value) > MAX_IMG_PER_PRODUCT:
